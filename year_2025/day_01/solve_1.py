@@ -1,27 +1,8 @@
 import sys
 from typing import List, Tuple
 
-import numpy as np
-
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
-
-# from numba import cuda, np as npc, vectorize
-
-# requires https://developer.nvidia.com/cuda-downloads CUDA toolkit. There are some sketchy versions in pip, but it's
-# almost impossible to find the right versions.
-# - pip install nvidia-pyindex
-# - pip install nvidia-cuda-runtime-cuXX
-# python -m numba -s
-# print(numba.__version__)
-# print(cuda.gpus)
-# print(cuda.detect())
-
-# if cuda.is_available():
-#     print("CUDA is available!")
-#     print("Device:", cuda.get_current_device().name)
-# else:
-#     print("CUDA is not available.")
 
 sys.setrecursionlimit(30_000)
 
