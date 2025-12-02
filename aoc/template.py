@@ -21,7 +21,7 @@ def mkdir_p(path: str):
 
 def copy_from_source():
     folders = []
-    for walker in os.walk("../../aoc/year_2024"):
+    for walker in os.walk("../../aoc/year_2025"):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):
                 folders.append(os.path.join(walker[0], folder))
@@ -40,7 +40,7 @@ def copy_from_source():
 
 def template_readme():
     folders = []
-    advent_folder = os.path.join(_script_dir(), "year_2024")
+    advent_folder = os.path.join(_script_dir(), "year_2025")
     for walker in os.walk(advent_folder):
         for folder in walker[1]:
             if re.search(r"day_\d", folder):

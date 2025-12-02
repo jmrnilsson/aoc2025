@@ -15,7 +15,6 @@ import numpy as np
 from defaultlist import defaultlist
 from more_itertools import windowed, chunked
 from more_itertools.recipes import sliding_window
-from automata.fa.nfa import NFA
 
 from aoc.helpers import locate, build_location, read_lines
 from aoc.poll_printer import PollPrinter
@@ -54,55 +53,81 @@ test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
 
-class TowelAutomaton:
+class HikingAutomaton:
+    trails: List[List[Tuple[int, int]]]
+    done: List[List[Tuple[int, int]]]
 
-    def __init__(self, towels):
-        self.towels = towels
+    def __init__(self, starting_pos: List[List[Tuple[int, int]]], grid):
+        self.trails = list(starting_pos)
+        self.done = []
+        self.grid = grid
 
-    def accepts(self, word):
-        last_states = {word}
-        while 1:
-            canonical_state = set(last_states)
-            for towel in self.towels:
-                current_state = set()
-                for state in last_states:
-                    if state == "":
-                        return True
+    def in_bound(self, y: int, x: int) -> bool:
+        return -1 < y < self.grid.shape[0] and -1 < x < self.grid.shape[1]
 
-                    current_state.add(state)
-                    if state.startswith(towel):
-                        current_state.add(state[len(towel):])
+    def _step(self, y, x) -> Generator[Tuple[int, int, int], None, None]:
+        steps = (
+            (y - 1, x + 0),
+            (y + 0, x + 1),
+            (y + 1, x + 0),
+            (y + 0, x + -1)
+        )
+        for step in steps:
+            if self.in_bound(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
+                yield *step, value
 
-                last_states = current_state
+    def walk(self):
+        trails = list(self.trails)
+        self.trails.clear()
+        for n, trail_ in enumerate(trails):
+            last_step = trail_[-1]
+            for y, x, value in self._step(*last_step):
+                trail = deepcopy(trail_)
+                trail.append((y, x))
+                if value == 9:
+                    self.done.append(trail)
+                else:
+                    self.trails.append(trail)
 
-            if canonical_state == last_states:
-                break
+    def score(self):
+        head_and_tails = {
+            (trail[0], trail[-1])
+            for trail in self.done
+        }
+        return len(head_and_tails)
 
-        return False
+    def rat(self):
+        return len(self.done)
+
+    def is_accepting(self):
+        return len(self.trails) == 0
 
 
 def solve_(__input=None):
     """
-    :challenge: 6
-    :expect: 374
+    :challenge: 1227775554
+    :expect: 40055209690
     """
-    words = []
+    lines: List[Tuple[int, ...]] = []
     with open(locate(__input), "r") as fp:
-        lines = read_lines(fp)
-        towels = lines[0].split(", ")
-        for word in lines[1:]:
-            words.append(word)
+        for line in read_lines(fp):
+            for pair in filter(lambda p: len(p) > 0, line.split(",")):
+                lines.append(tuple(map(int, list(pair.split("-")))))
 
-    nfa = TowelAutomaton(towels)
+    total = 0
+    for x, y in lines:
+        for n in range(x, y + 1):
+            m = str(n)
+            if (len_m := len(m)) == 0:
+                continue
 
-    n = 0
-    total = list()
-    for word in words:
-        if nfa.accepts(word):
-            total.append(word)
-            n += 1
+            split_at = len_m // 2
 
-    return sum(1 for _ in total)
+            c, d = m[0: split_at], m[split_at:]
+            if c == d:
+                total += n
+
+    return total
 
 
 if __name__ == "__main__":
@@ -110,3 +135,45 @@ if __name__ == "__main__":
     expect = get_meta_from_fn(solve_, "expect")
     print2(solve_, test_input, challenge)
     print2(solve_, puzzle_input, expect, ANSIColors.OK_GREEN)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

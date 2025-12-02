@@ -3,10 +3,11 @@ from typing import List
 import pytest
 
 from aoc.tests.test_fixtures import make_fixture, AdventFixture
-from . import solve_1 as solution_1, solve_2 as solution_2
+from . import solve_1 as solution_1
+from . import solve_2 as solution_2
 
 
-class TestAdvent202419:
+class TestAdvent202405:
 
     @pytest.fixture
     def fixt(self) -> List[AdventFixture]:

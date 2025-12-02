@@ -1,10 +1,8 @@
-import re
 import sys
+from typing import List, Tuple
 
-from aoc.helpers import locate, build_location, read_lines
-from aoc.printer import get_meta_from_fn, ANSIColors, print2
-from year_2024.day_17.chronospatial_computer import ChronospatialComputer
-
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
 sys.setrecursionlimit(30_000)
 
@@ -20,29 +18,30 @@ test_input_5 = build_location(__file__, "test_5.txt")
 
 
 def solve_(__input=None):
-    # challenge 4,6,3,5,6,3,5,2,1,0.
-    # expect 2,1,3,0,5,2,3,7,1
     """
-    :challenge_2: -1
-    :expect: -1
+    :challenge: 6
+    :expect: 5887
     """
-    lines = []
+    lines: List[Tuple[str, int]] = []
     with open(locate(__input), "r") as fp:
         for line in read_lines(fp):
-            lines.append(line)
+            _dir, *_dist = list(line)
+            lines.append((_dir, int("".join(_dist))))
 
-    a, b, c = [int(m) for m in re.findall(r"\d+", "".join(lines[:3]))]
-    optcodes = [int(m) for m in re.findall(r"\d+", lines[3])]
+    mod, pos, n = 100, 50, 0
+    for direction, distance in lines:
+        for i in range(0, distance):
+            if direction == "L":
+                pos -= 1
+                pos %= mod
+            else:
+                pos += 1
+                pos %= mod
 
-    outcome = []
-    computer = ChronospatialComputer(a, b, c, optcodes, outcome.append)
+            if pos == 0:
+                n += 1
 
-    while optcode := computer.next():
-        computer.set_operation(optcode[0])
-        computer.set_operand(optcode[1])
-        computer.apply()
-
-    return ",".join(str(o) for o in outcome)
+    return n
 
 if __name__ == "__main__":
     challenge = get_meta_from_fn(solve_, "challenge")
