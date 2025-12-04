@@ -39,63 +39,13 @@ pip install -r requirements.txt
 ```py
 import itertools
 import sys
-from copy import deepcopy
-from typing import Generator, List, Tuple
+from typing import List, Tuple
 import numpy as np
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
 
 sys.setrecursionlimit(30_000)
-
-class HikingAutomaton:
-    trails: List[List[Tuple[int, int]]]
-    done: List[List[Tuple[int, int]]]
-
-    def __init__(self, starting_pos: List[List[Tuple[int, int]]], grid):
-        self.trails = list(starting_pos)
-        self.done = []
-        self.grid = grid
-
-    def in_bound(self, y: int, x: int) -> bool:
-        return -1 < y < self.grid.shape[0] and -1 < x < self.grid.shape[1]
-
-    def _step(self, y, x) -> Generator[Tuple[int, int, int], None, None]:
-        steps = (
-            (y - 1, x + 0),
-            (y + 0, x + 1),
-            (y + 1, x + 0),
-            (y + 0, x + -1)
-        )
-        for step in steps:
-            if self.in_bound(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
-                yield *step, value
-
-    def walk(self):
-        trails = list(self.trails)
-        self.trails.clear()
-        for n, trail_ in enumerate(trails):
-            last_step = trail_[-1]
-            for y, x, value in self._step(*last_step):
-                trail = deepcopy(trail_)
-                trail.append((y, x))
-                if value == 9:
-                    self.done.append(trail)
-                else:
-                    self.trails.append(trail)
-
-    def score(self):
-        head_and_tails = {
-            (trail[0], trail[-1])
-            for trail in self.done
-        }
-        return len(head_and_tails)
-
-    def rat(self):
-        return len(self.done)
-
-    def is_accepting(self):
-        return len(self.trails) == 0
 
 def moore_neighborhood(y_x: Tuple[int, int], shape: np.shape):
     neighbors_ = list()
