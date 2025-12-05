@@ -18,7 +18,10 @@ test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
 
-class Slice:
+class MutableSlice:
+    """
+    Python slices are immutable. Use this instead.
+    """
     begin: int
     end: int
 
@@ -40,8 +43,8 @@ class Slice:
         return f"[{self.begin}, {self.end}]"
 
 
-def compress(current: List[Slice]) -> List[Slice]:
-    others: List[Slice] = list()
+def compress(current: List[MutableSlice]) -> List[MutableSlice]:
+    others: List[MutableSlice] = list()
     while current:
         current_slice = current.pop(0)
         begin, end = current_slice.begin, current_slice.end
@@ -52,19 +55,19 @@ def compress(current: List[Slice]) -> List[Slice]:
 
             # make sure slices do not overlap. make sure begin-end is always begin <= end
             begin_in_range = other_begin <= begin <= other_end
-            _end_in_range = other_begin <= end <= other_end
+            end_in_range = other_begin <= end <= other_end
             other_begin_in_range = begin <= other_begin <= end
-            _other_end_in_range = begin <= other_end <= end
+            other_end_in_range = begin <= other_end <= end
 
             # outside - adjust both begin and end
-            if other_begin_in_range and _other_end_in_range:
+            if other_begin_in_range and other_end_in_range:
                 other.begin = begin
                 other.end = end
                 mutated_existing = True
                 break
 
             # inside - skip
-            if begin_in_range and _end_in_range:
+            if begin_in_range and end_in_range:
                 mutated_existing = True
                 break
 
@@ -81,7 +84,7 @@ def compress(current: List[Slice]) -> List[Slice]:
                 break
 
         if not mutated_existing:
-            others.append(Slice(begin, end))
+            others.append(MutableSlice(begin, end))
 
     return others
 
@@ -96,7 +99,7 @@ def solve_(__input=None):
         for line in read_lines(fp):
             if "-" in line:
                 a, b = line.split("-")
-                inbound.append(Slice(int(a), int(b)))
+                inbound.append(MutableSlice(int(a), int(b)))
 
     mnemonic = set()
     while 1:
