@@ -53,7 +53,6 @@ def compress(current: List[MutableSlice]) -> List[MutableSlice]:
         for other in others:
             other_begin, other_end = other.begin, other.end
 
-            # make sure slices do not overlap. make sure begin-end is always begin <= end
             begin_in_range = other_begin <= begin <= other_end
             end_in_range = other_begin <= end <= other_end
             other_begin_in_range = begin <= other_begin <= end
