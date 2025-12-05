@@ -1,4 +1,3 @@
-import operator
 import sys
 from typing import List
 
@@ -19,7 +18,7 @@ test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
 
-class Slice():
+class Slice:
     begin: int
     end: int
 
