@@ -4,7 +4,6 @@ from typing import List
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
-
 sys.setrecursionlimit(30_000)
 
 _default_puzzle_input = "year_2024/day_01/puzzle.txt"
@@ -20,7 +19,9 @@ test_input_5 = build_location(__file__, "test_5.txt")
 
 class MutableSlice:
     """
-    Python slices are immutable. Use this instead.
+    A mutable replacement for Python's built-in slice objects, which are immutable.
+    This class allows the `begin` and `end` bounds to be updated in place, avoiding
+    the need to create new slices or rebuild data structures that reference them.
     """
     begin: int
     end: int
@@ -44,43 +45,38 @@ def compress(current: List[MutableSlice]) -> List[MutableSlice]:
     others: List[MutableSlice] = list()
     while current:
         current_slice = current.pop(0)
-        begin, end = current_slice.begin, current_slice.end
+        cb, ce = current_slice.begin, current_slice.end
         mutated_existing = False
 
         for other in others:
-            other_begin, other_end = other.begin, other.end
-
-            begin_in_range = other_begin <= begin <= other_end
-            end_in_range = other_begin <= end <= other_end
-            other_begin_in_range = begin <= other_begin <= end
-            other_end_in_range = begin <= other_end <= end
+            ob, oe = other.begin, other.end
 
             # outside - adjust both begin and end
-            if other_begin_in_range and other_end_in_range:
-                other.begin = begin
-                other.end = end
+            if cb <= ob and oe <= ce:
+                other.begin = cb
+                other.end = ce
                 mutated_existing = True
                 break
 
             # inside - skip
-            if begin_in_range and end_in_range:
+            if ob <= cb and ce <= oe:
                 mutated_existing = True
                 break
 
             # overlap - adjust end
-            elif begin_in_range:
+            elif ob <= cb <= oe:
                 mutated_existing = True
-                other.end = max(end, other_end)
+                other.end = max(ce, oe)
                 break
 
             # overlap - adjust begin
-            elif other_begin_in_range:
+            elif cb <= ob <= ce:
                 mutated_existing = True
-                other.begin = min(begin, other_begin)
+                other.begin = min(cb, ob)
                 break
 
         if not mutated_existing:
-            others.append(MutableSlice(begin, end))
+            others.append(MutableSlice(cb, ce))
 
     return others
 

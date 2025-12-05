@@ -1,4 +1,5 @@
 import sys
+from typing import List, Tuple
 
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
@@ -22,18 +23,16 @@ def solve_(__input=None):
     :challenge: 3
     :expect: 701
     """
-    fresh_ingredient_range = []
+    fresh_ingredient_range: List[Tuple[int, ...]] = []
     fruits = []
     with open(locate(__input), "r") as fp:
         for line in read_lines(fp):
             if "-" in line:
-                a, b = line.split("-")
-                fresh_ingredient_range.append((int(a), int(b)))
-
+                fresh_ingredient_range.append(tuple(map(int, line.split("-"))))
             else:
                 fruits.append(int(line))
 
-    return sum(1 for fruit in fruits if any(1 for begin, end in fresh_ingredient_range if begin < fruit <= end))
+    return sum(1 for f in fruits if any(1 for begin, end in fresh_ingredient_range if begin < f <= end))
 
 if __name__ == "__main__":
     challenge = get_meta_from_fn(solve_, "challenge")

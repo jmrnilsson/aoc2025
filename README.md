@@ -45,7 +45,9 @@ sys.setrecursionlimit(30_000)
 
 class MutableSlice:
     """
-    Python slices are immutable. Use this instead.
+    A mutable replacement for Python's built-in slice objects, which are immutable.
+    This class allows the `begin` and `end` bounds to be updated in place, avoiding
+    the need to create new slices or rebuild data structures that reference them.
     """
     begin: int
     end: int
@@ -68,43 +70,38 @@ def compress(current: List[MutableSlice]) -> List[MutableSlice]:
     others: List[MutableSlice] = list()
     while current:
         current_slice = current.pop(0)
-        begin, end = current_slice.begin, current_slice.end
+        cb, ce = current_slice.begin, current_slice.end
         mutated_existing = False
 
         for other in others:
-            other_begin, other_end = other.begin, other.end
-
-            begin_in_range = other_begin <= begin <= other_end
-            end_in_range = other_begin <= end <= other_end
-            other_begin_in_range = begin <= other_begin <= end
-            other_end_in_range = begin <= other_end <= end
+            ob, oe = other.begin, other.end
 
             # outside - adjust both begin and end
-            if other_begin_in_range and other_end_in_range:
-                other.begin = begin
-                other.end = end
+            if cb <= ob and oe <= ce:
+                other.begin = cb
+                other.end = ce
                 mutated_existing = True
                 break
 
             # inside - skip
-            if begin_in_range and end_in_range:
+            if ob <= cb and ce <= oe:
                 mutated_existing = True
                 break
 
             # overlap - adjust end
-            elif begin_in_range:
+            elif ob <= cb <= oe:
                 mutated_existing = True
-                other.end = max(end, other_end)
+                other.end = max(ce, oe)
                 break
 
             # overlap - adjust begin
-            elif other_begin_in_range:
+            elif cb <= ob <= ce:
                 mutated_existing = True
-                other.begin = min(begin, other_begin)
+                other.begin = min(cb, ob)
                 break
 
         if not mutated_existing:
-            others.append(MutableSlice(begin, end))
+            others.append(MutableSlice(cb, ce))
 
     return others
 
@@ -136,6 +133,7 @@ def solve_(__input=None):
 
 ```py
 import sys
+from typing import List, Tuple
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
@@ -147,18 +145,16 @@ def solve_(__input=None):
     :challenge: 3
     :expect: 701
     """
-    fresh_ingredient_range = []
+    fresh_ingredient_range: List[Tuple[int, ...]] = []
     fruits = []
     with open(locate(__input), "r") as fp:
         for line in read_lines(fp):
             if "-" in line:
-                a, b = line.split("-")
-                fresh_ingredient_range.append((int(a), int(b)))
-
+                fresh_ingredient_range.append(tuple(map(int, line.split("-"))))
             else:
                 fruits.append(int(line))
 
-    return sum(1 for fruit in fruits if any(1 for begin, end in fresh_ingredient_range if begin < fruit <= end))
+    return sum(1 for f in fruits if any(1 for begin, end in fresh_ingredient_range if begin < f <= end))
 
 ```
 ## year_2025\day_04\solve_2.py
