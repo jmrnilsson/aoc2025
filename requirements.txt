@@ -1,28 +1,3 @@
-# # https://numpy.org/devdocs/numpy_2_0_migration_guide.html
-# # numba==0.60.0
-# # numpy==1.26.2
-# astar==0.99
-# bitarray==3.0.0
-# black==24.10.0
-# criticalpath==0.1.5
-# defaultlist==1.0.0
-# dijkstra==0.2.1
-# docstring-parser==0.16
-# frozenlist==1.5.0
-# intervaltree==3.1.0
-# more-itertools==10.5.0
-# numba==0.58.1
-# numpy==2.0.2; sys_platform != "Darwin"
-# pandas==2.2.3
-# pycodestyle==2.12.1
-# pyflakes==3.2.0
-# pylint==3.3.1
-# pytest==8.3.3
-# python-constraint==1.4.0
-# radon==6.0.1
-# ruff==0.8.0
-# z3-solver==4.13.3.0
-# z3==0.2.0
 astar==0.99
 bitarray==3.0.0
 black==24.10.0
@@ -35,8 +10,10 @@ intervaltree==3.1.0
 more-itertools==10.5.0
 # numba==0.60.0
 # https://numpy.org/devdocs/numpy_2_0_migration_guide.html
-numpy==2.0.2; sys_platform != "Darwin"
+numpy==2.0.2
+# ; sys_platform != "Darwin"
 # numpy==1.26.2
+
 pandas==2.2.3
 pycodestyle==2.12.1
 pyflakes==3.2.0
@@ -47,4 +24,9 @@ radon==6.0.1
 z3-solver==4.13.3.0
 z3==0.2.0
 ruff==0.8.0
-sympy==1.13.3
+sympy==1.13.1
+automata-lib==6.0.2
+--index-url https://download.pytorch.org/whl/cu126
+torch==2.6.0+cu126
+torchvision==0.21.0+cu126
+torchaudio==2.6.0+cu126
