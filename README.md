@@ -66,9 +66,6 @@ class MutableSlice:
     def __eq__(self, value):
         return value.begin == self.begin and value.end == self.end
 
-    def __str__(self):
-        return f"[{self.begin}, {self.end}]"
-
 def compress(current: List[MutableSlice]) -> List[MutableSlice]:
     others: List[MutableSlice] = list()
     while current:
@@ -79,7 +76,6 @@ def compress(current: List[MutableSlice]) -> List[MutableSlice]:
         for other in others:
             other_begin, other_end = other.begin, other.end
 
-            # make sure slices do not overlap. make sure begin-end is always begin <= end
             begin_in_range = other_begin <= begin <= other_end
             end_in_range = other_begin <= end <= other_end
             other_begin_in_range = begin <= other_begin <= end
@@ -119,25 +115,23 @@ def solve_(__input=None):
     :challenge: 14
     :expect: 352340558684863
     """
-    inbound = []
+    fresh_ids = []
     with open(locate(__input), "r") as fp:
         for line in read_lines(fp):
             if "-" in line:
                 a, b = line.split("-")
-                inbound.append(MutableSlice(int(a), int(b)))
+                fresh_ids.append(MutableSlice(int(a), int(b)))
 
     mnemonic = set()
     while 1:
-        outbound = compress(inbound)
+        fresh_ids = compress(fresh_ids)
 
-        if mnemonic == (current_mnemonic := set(outbound)):
-            inbound = outbound
+        if mnemonic == (current_mnemonic := set(fresh_ids)):
             break
 
         mnemonic = current_mnemonic
-        inbound = outbound
 
-    return sum(i.end - i.begin + 1 for i in inbound)
+    return sum(i.end - i.begin + 1 for i in fresh_ids)
 
 ```
 ## year_2025\day_05\solve_1.py
