@@ -34,12 +34,213 @@ pip install -r requirements.txt
 |All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2025\day_05\solve_2.py
+
+```py
+import operator
+import sys
+from typing import List
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+class Slice():
+    begin: int
+    end: int
+
+    def __init__(self, begin: int, end: int):
+        self.begin = begin
+        self.end = end
+
+    def __repr__(self):
+        return f"Slice({self.begin}, {self.end})"
+
+    def __hash__(self):
+        hashable = (self.begin, self.end)
+        return hash(hashable)
+
+    def __eq__(self, value):
+        return value.begin == self.begin and value.end == self.end
+
+    def __str__(self):
+        return f"[{self.begin}, {self.end}]"
+
+def compress(current: List[Slice]) -> List[Slice]:
+    others: List[Slice] = list()
+    while current:
+        current_slice = current.pop(0)
+        begin, end = current_slice.begin, current_slice.end
+        mutated_existing = False
+
+        for other in others:
+            other_begin, other_end = other.begin, other.end
+
+            # make sure slices do not overlap. make sure begin-end is always begin <= end
+            begin_in_range = other_begin <= begin <= other_end
+            _end_in_range = other_begin <= end <= other_end
+            other_begin_in_range = begin <= other_begin <= end
+            _other_end_in_range = begin <= other_end <= end
+
+            # outside - adjust both begin and end
+            if other_begin_in_range and _other_end_in_range:
+                other.begin = begin
+                other.end = end
+                mutated_existing = True
+                break
+
+            # inside - skip
+            if begin_in_range and _end_in_range:
+                mutated_existing = True
+                break
+
+            # overlap - adjust end
+            elif begin_in_range:
+                mutated_existing = True
+                other.end = max(end, other_end)
+                break
+
+            # overlap - adjust begin
+            elif other_begin_in_range:
+                mutated_existing = True
+                other.begin = min(begin, other_begin)
+                break
+
+        if not mutated_existing:
+            others.append(Slice(begin, end))
+
+    return others
+
+def solve_(__input=None):
+    """
+    :challenge: 14
+    :expect: 352340558684863
+    """
+    inbound = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            if "-" in line:
+                a, b = line.split("-")
+                inbound.append(Slice(int(a), int(b)))
+
+    mnemonic = set()
+    while 1:
+        outbound = compress(inbound)
+
+        if mnemonic == (current_mnemonic := set(outbound)):
+            inbound = outbound
+            break
+
+        mnemonic = current_mnemonic
+        inbound = outbound
+
+    return sum(i.end - i.begin + 1 for i in inbound)
+
+```
+## year_2025\day_05\solve_1.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+class HikingAutomaton:
+    trails: List[List[Tuple[int, int]]]
+    done: List[List[Tuple[int, int]]]
+
+    def __init__(self, starting_pos: List[List[Tuple[int, int]]], grid):
+        self.trails = list(starting_pos)
+        self.done = []
+        self.grid = grid
+
+    def in_bound(self, y: int, x: int) -> bool:
+        return -1 < y < self.grid.shape[0] and -1 < x < self.grid.shape[1]
+
+    def _step(self, y, x) -> Generator[Tuple[int, int, int], None, None]:
+        steps = (
+            (y - 1, x + 0),
+            (y + 0, x + 1),
+            (y + 1, x + 0),
+            (y + 0, x + -1)
+        )
+        for step in steps:
+            if self.in_bound(*step) and (value := self.grid[step]) == self.grid[y, x] + 1:
+                yield *step, value
+
+    def walk(self):
+        trails = list(self.trails)
+        self.trails.clear()
+        for n, trail_ in enumerate(trails):
+            last_step = trail_[-1]
+            for y, x, value in self._step(*last_step):
+                trail = deepcopy(trail_)
+                trail.append((y, x))
+                if value == 9:
+                    self.done.append(trail)
+                else:
+                    self.trails.append(trail)
+
+    def score(self):
+        head_and_tails = {
+            (trail[0], trail[-1])
+            for trail in self.done
+        }
+        return len(head_and_tails)
+
+    def rat(self):
+        return len(self.done)
+
+    def is_accepting(self):
+        return len(self.trails) == 0
+
+def solve_(__input=None):
+    """
+    :challenge: 3
+    :expect: 701
+    """
+    fresh_ingredient_range = []
+    fruits = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            if "-" in line:
+                a, b = line.split("-")
+                fresh_ingredient_range.append((int(a), int(b)))
+
+            else:
+                fruits.append(int(line))
+
+    return sum(1 for fruit in fruits if any(1 for begin, end in fresh_ingredient_range if begin < fruit <= end))
+
+```
 ## year_2025\day_04\solve_2.py
 
 ```py
 import itertools
 import sys
-from typing import List, Tuple
+from bisect import insort
+from typing import Generator, List, Tuple
 import numpy as np
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
@@ -47,17 +248,14 @@ from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
 sys.setrecursionlimit(30_000)
 
-def moore_neighborhood(y_x: Tuple[int, int], shape: np.shape):
-    neighbors_ = list()
+def moore_neighborhood(y_x: Tuple[int, int], shape: np.shape) -> Generator[Tuple[int, int], None, None]:
     moore_neigh = [(1, 0), (0, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
     for dy, dx in moore_neigh:
         neighbor = y_x[0] + dy, y_x[1] + dx
 
         if -1 < neighbor[0] < shape[0] and -1 < neighbor[1] < shape[1]:
-            neighbors_.append(neighbor)
-
-    return neighbors_
+            yield neighbor
 
 def solve_(__input=None):
     """
@@ -83,9 +281,7 @@ def solve_(__input=None):
     while 1:
         if len(where) < 1:
             for y, x in np.argwhere(storage == 1):
-                where.append((y, x))
-
-            where.sort()
+                insort(where, (y, x))
 
             if last_mnemonic == (current_mnemonic := tuple(where)) or len(where) < 1:
                 break

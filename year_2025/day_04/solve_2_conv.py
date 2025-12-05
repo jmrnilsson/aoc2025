@@ -21,15 +21,13 @@ test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
 
-def moore_neighborhood(y_x: Tuple[int, int], shape: np.shape) -> Generator[Tuple[int, int], None, None]:
-    moore_neigh = [(1, 0), (0, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-
-    for dy, dx in moore_neigh:
-        neighbor = y_x[0] + dy, y_x[1] + dx
-
-        if -1 < neighbor[0] < shape[0] and -1 < neighbor[1] < shape[1]:
-            yield neighbor
-
+def moore_neighborhood(m, coord):
+    r, c = coord
+    r0 = max(r-1, 0)
+    r1 = min(r+2, m.shape[0])  # +2 because slice end is exclusive
+    c0 = max(c-1, 0)
+    c1 = min(c+2, m.shape[1])
+    return m[r0:r1, c0:c1]
 
 def solve_(__input=None):
     """
@@ -51,9 +49,20 @@ def solve_(__input=None):
     where: List[Tuple[int, int]] = sorted((y, x) for y, x in np.argwhere(storage == 1))
     removed_rolls = 0
     last_mnemonic = tuple()
+    mask = np.vstack([[1, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     while 1:
         if len(where) < 1:
+            mask = ~storage
+            mask.args
+
+        coords = np.argwhere(m == 1)
+        for co in coords:
+            sub = moore_subgrid(m, co)
+            print("coord:", co)
+            print(sub)
+            print("---")
+            # x = np.convolve([[1, 1, 1], [1, 0, 1], [1, 1, 1]], storage)
             for y, x in np.argwhere(storage == 1):
                 insort(where, (y, x))
 
