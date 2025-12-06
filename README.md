@@ -48,6 +48,8 @@ sys.setrecursionlimit(30_000)
 
 def solve_(__input=None):
     """
+    A version that solves this with regex matches. Check for a rewrite named solve_2_transpose.py for a
+    version solving this with transpose instead.
     :challenge: 3263827
     :expect: 8342588849093
     """
@@ -82,27 +84,13 @@ def solve_(__input=None):
 ## year_2025\day_06\solve_1.py
 
 ```py
-import itertools
 import operator
 import re
-import statistics
 import sys
-from collections import Counter, OrderedDict, defaultdict
-from copy import copy, deepcopy
-from dataclasses import dataclass
 from functools import reduce
-from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
-import more_itertools
-import numpy as np
 from defaultlist import defaultlist
-from more_itertools import windowed, chunked
-from more_itertools.recipes import sliding_window
-from aoc.helpers import locate, build_location, read_lines
-from aoc.poll_printer import PollPrinter
-from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
-from aoc.tests.test_fixtures import get_challenges_from_meta
-from aoc.tools import transpose
-from year_2021.day_05 import direction
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
 
 
 sys.setrecursionlimit(30_000)

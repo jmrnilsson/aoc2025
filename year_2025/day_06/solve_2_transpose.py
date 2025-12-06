@@ -2,7 +2,7 @@ import operator
 import re
 import sys
 from functools import reduce
-from typing import Callable, List
+from typing import List
 
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2

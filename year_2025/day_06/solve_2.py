@@ -22,6 +22,8 @@ test_input_5 = build_location(__file__, "test_5.txt")
 
 def solve_(__input=None):
     """
+    A version that solves this with regex matches. Check for a rewrite named solve_2_transpose.py for a
+    version solving this with transpose instead.
     :challenge: 3263827
     :expect: 8342588849093
     """
