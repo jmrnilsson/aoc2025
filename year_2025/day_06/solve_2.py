@@ -1,8 +1,8 @@
 import operator
-import re
 import sys
 from functools import reduce
-from typing import List, Tuple
+
+from defaultlist import defaultlist
 
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
@@ -22,34 +22,29 @@ test_input_5 = build_location(__file__, "test_5.txt")
 
 def solve_(__input=None):
     """
-    This version that solves this with regex and slices. More verbose rewrites use transpose or bottom up
-    traversal.
     :challenge: 3263827
     :expect: 8342588849093
     """
 
-    lines = []
+    operators = defaultlist(lambda: " ")
     with open(locate(__input), "r") as fp:
-        lines = list(read_lines(fp))
+        _rl = read_lines(fp)
+        lines = _rl[:-1]
+        for o in _rl[-1]:
+            operators.append(o)
 
-    digit_matches: List[Tuple[slice, str]] = []
-    operator_matches = [m for m in re.finditer(r"\S+", lines[-1])]
-    last_operator_match_end = len(lines[-1]) + 2
-    operator_lookup = {'*': operator.mul, '+': operator.add, '-': operator.sub}
-
-    for operator_match in reversed(operator_matches):
-        digit_matches.append((slice(operator_match.start(), last_operator_match_end - 1), operator_match.group(0)))
-        last_operator_match_end = operator_match.end()
-
-    total = 0
-    for digit_match_slice, ope in digit_matches:
-        numbers: List[int] = []
-
-        for j in range(digit_match_slice.start, digit_match_slice.stop - 1):
-            number = reduce(lambda acc, i: acc + lines[i][j].replace(" ", ""), range(0, len(lines) - 1), "")
+    total, numbers, x = 0, [], len(lines[0])
+    while x > -1:
+        x -= 1
+        if (number := "".join(lines[y][x] for y in range(0, len(lines))).strip()) != "":
             numbers.append(int(number))
 
-        total += reduce(operator_lookup[ope], map(int, numbers))
+        if (op := operators[x]) != " ":
+            match op:
+                case '+': total += reduce(operator.add, numbers)
+                case '*': total += reduce(operator.mul, numbers)
+
+            numbers.clear()
 
     return total
 

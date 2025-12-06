@@ -4,9 +4,8 @@ import pytest
 
 from aoc.tests.test_fixtures import make_fixture, AdventFixture
 from . import solve_1 as solution_1
-from . import solve_2 as solution_2
-from . import solve_2_bottom_up as solve_2_bottom_up_fix_up
-from . import solve_2_transpose as solve_2_transpose
+from .sink import solve_2 as solution_2, solve_2_bottom_up as solve_2_bottom_up_fix_up, \
+    solve_2_transpose as solve_2_transpose
 
 
 class TestAdvent202405:
