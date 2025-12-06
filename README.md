@@ -48,8 +48,8 @@ sys.setrecursionlimit(30_000)
 
 def solve_(__input=None):
     """
-    A version that solves this with regex matches. Check for a rewrite named solve_2_transpose.py for a
-    version solving this with transpose instead.
+    This version that solves this with regex and slices. More verbose rewrites use transpose or bottom up
+    traversal.
     :challenge: 3263827
     :expect: 8342588849093
     """
@@ -58,21 +58,20 @@ def solve_(__input=None):
     with open(locate(__input), "r") as fp:
         lines = list(read_lines(fp))
 
-    match_ranges: List[Tuple[slice, str]] = []
-    matches = [m for m in re.finditer(r"\S+", lines[-1])]
-    matches_rev = reversed(matches)
-    last_start = len(lines[-1]) + 2
+    digit_matches: List[Tuple[slice, str]] = []
+    operator_matches = [m for m in re.finditer(r"\S+", lines[-1])]
+    last_operator_match_end = len(lines[-1]) + 2
     operator_lookup = {'*': operator.mul, '+': operator.add, '-': operator.sub}
 
-    for match in matches_rev:
-        match_ranges.append((slice(match.start(), last_start - 1), match.group(0)))
-        last_start = match.end()
+    for operator_match in reversed(operator_matches):
+        digit_matches.append((slice(operator_match.start(), last_operator_match_end - 1), operator_match.group(0)))
+        last_operator_match_end = operator_match.end()
 
     total = 0
-    for ms, ope in match_ranges:
+    for digit_match_slice, ope in digit_matches:
         numbers: List[int] = []
 
-        for j in range(ms.start, ms.stop - 1):
+        for j in range(digit_match_slice.start, digit_match_slice.stop - 1):
             number = reduce(lambda acc, i: acc + lines[i][j].replace(" ", ""), range(0, len(lines) - 1), "")
             numbers.append(int(number))
 

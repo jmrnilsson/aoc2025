@@ -1,8 +1,7 @@
 import operator
-import re
 import sys
 from functools import reduce
-from typing import List, Tuple
+from typing import List
 
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
@@ -22,36 +21,35 @@ test_input_5 = build_location(__file__, "test_5.txt")
 
 def solve_(__input=None):
     """
-    This version that solves this with regex and slices. More verbose rewrites use transpose or bottom up
-    traversal.
     :challenge: 3263827
     :expect: 8342588849093
     """
 
-    lines = []
+    lines: List[List[str]] = []
     with open(locate(__input), "r") as fp:
-        lines = list(read_lines(fp))
+        for line in read_lines(fp):
+            lines.append([char for char in line])
 
-    digit_matches: List[Tuple[slice, str]] = []
-    operator_matches = [m for m in re.finditer(r"\S+", lines[-1])]
-    last_operator_match_end = len(lines[-1]) + 2
+    lines[-1].append(" ")
+    height, width = len(lines), len(lines[0])
+
+    numbers: List[int] = []
+    oper: str = ""
+    total: int = 0
     operator_lookup = {'*': operator.mul, '+': operator.add, '-': operator.sub}
+    for x in range(0, width):
+        if (optional_oper := lines[height - 1][x]) != " ":
+            if any(numbers):
+                total += reduce(operator_lookup[oper], numbers)
+                numbers.clear()
 
-    for operator_match in reversed(operator_matches):
-        digit_matches.append((slice(operator_match.start(), last_operator_match_end - 1), operator_match.group(0)))
-        last_operator_match_end = operator_match.end()
+            oper = optional_oper
 
-    total = 0
-    for digit_match_slice, ope in digit_matches:
-        numbers: List[int] = []
-
-        for j in range(digit_match_slice.start, digit_match_slice.stop - 1):
-            number = reduce(lambda acc, i: acc + lines[i][j].replace(" ", ""), range(0, len(lines) - 1), "")
+        vertical_generator = range(height - 2, -1, -1)
+        if number := reduce(lambda acc, y: lines[y][x].replace(" ", "") + acc, vertical_generator, ""):
             numbers.append(int(number))
 
-        total += reduce(operator_lookup[ope], map(int, numbers))
-
-    return total
+    return total + reduce(operator_lookup[oper], numbers)
 
 
 if __name__ == "__main__":
