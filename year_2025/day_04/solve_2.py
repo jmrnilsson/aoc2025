@@ -57,7 +57,10 @@ def solve_(__input=None):
             for y, x in np.argwhere(storage == 1):
                 insort(where, (y, x))
 
-            if last_mnemonic == (current_mnemonic := tuple(where)) or len(where) < 1:
+            if last_mnemonic == (current_mnemonic := tuple(where)):
+                break
+
+            if len(where) < 1:
                 break
 
             last_mnemonic = current_mnemonic

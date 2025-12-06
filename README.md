@@ -32,6 +32,103 @@ pip install -r requirements.txt
 | All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2025\day_06\solve_2.py
+
+```py
+import operator
+import re
+import sys
+from functools import reduce
+from typing import List, Tuple
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+def solve_(__input=None):
+    """
+    :challenge: 3263827
+    :expect: 8342588849093
+    """
+
+    lines = []
+    with open(locate(__input), "r") as fp:
+        lines = list(read_lines(fp))
+
+    match_ranges: List[Tuple[slice, str]] = []
+    matches = [m for m in re.finditer(r"\S+", lines[-1])]
+    matches_rev = reversed(matches)
+    last_start = len(lines[-1]) + 2
+    operator_lookup = {'*': operator.mul, '+': operator.add, '-': operator.sub}
+
+    for match in matches_rev:
+        match_ranges.append((slice(match.start(), last_start - 1), match.group(0)))
+        last_start = match.end()
+
+    total = 0
+    for ms, ope in match_ranges:
+        numbers: List[int] = []
+
+        for j in range(ms.start, ms.stop - 1):
+            number = reduce(lambda acc, i: acc + lines[i][j].replace(" ", ""), range(0, len(lines) - 1), "")
+            numbers.append(int(number))
+
+        total += reduce(operator_lookup[ope], map(int, numbers))
+
+    return total
+
+```
+## year_2025\day_06\solve_1.py
+
+```py
+import itertools
+import operator
+import re
+import statistics
+import sys
+from collections import Counter, OrderedDict, defaultdict
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from functools import reduce
+from typing import Dict, List, Callable, Tuple, Literal, Set, Generator, Any
+import more_itertools
+import numpy as np
+from defaultlist import defaultlist
+from more_itertools import windowed, chunked
+from more_itertools.recipes import sliding_window
+from aoc.helpers import locate, build_location, read_lines
+from aoc.poll_printer import PollPrinter
+from aoc.printer import get_meta_from_fn, print_, ANSIColors, print2
+from aoc.tests.test_fixtures import get_challenges_from_meta
+from aoc.tools import transpose
+from year_2021.day_05 import direction
+
+
+sys.setrecursionlimit(30_000)
+
+def solve_(__input=None):
+    """
+    :challenge: 4277556
+    :expect: 3261038365331
+    """
+
+    lines = defaultlist(list)
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            for i, m in enumerate(re.findall(r"\S+", line)):
+                lines[i].append(m)
+
+    operator_lookup = {'*': operator.mul, '+': operator.add, '-': operator.sub}
+    total = 0
+    for m in lines:
+        match_reversed = reversed(m)
+        ope, *rest = match_reversed
+        total += reduce(operator_lookup[ope], map(int, rest))
+
+    return total
+
+```
 ## year_2025\day_05\solve_2.py
 
 ```py
@@ -206,7 +303,10 @@ def solve_(__input=None):
             for y, x in np.argwhere(storage == 1):
                 insort(where, (y, x))
 
-            if last_mnemonic == (current_mnemonic := tuple(where)) or len(where) < 1:
+            if last_mnemonic == (current_mnemonic := tuple(where)):
+                break
+
+            if len(where) < 1:
                 break
 
             last_mnemonic = current_mnemonic
