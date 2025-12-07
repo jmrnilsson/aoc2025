@@ -1,12 +1,10 @@
+import re
 import sys
-from collections import Counter
-from typing import Dict
-
-import numpy as np
+from collections import Counter, defaultdict
+from typing import Dict, Set
 
 from aoc.helpers import build_location, locate, read_lines
 from aoc.printer import ANSIColors, get_meta_from_fn, print2
-
 
 sys.setrecursionlimit(30_000)
 
@@ -20,15 +18,19 @@ test_input_3 = build_location(__file__, "test_3.txt")
 test_input_4 = build_location(__file__, "test_4.txt")
 test_input_5 = build_location(__file__, "test_5.txt")
 
+type YAxis = Dict[int, Set[int]]
 
 class QuantumTachyonBeam:
     x_range: Dict[int, int]
     y: int
+    ys: YAxis
+    max_y: int
 
-    def __init__(self, starting_pos: int, grid):
+    def __init__(self, starting_pos: int, ys: YAxis, max_y: int):
         self.y = 0
         self.x_range = Counter({starting_pos: 1})
-        self.grid = grid
+        self.ys = ys
+        self.max_y = max_y
 
     def travel(self):
         self.y += 1
@@ -37,11 +39,9 @@ class QuantumTachyonBeam:
 
         while queue:
             x, count_ = queue.pop(0)
-            if self.grid[(self.y, x)] == "^":
-                if (left := x - 1) > -1:
-                    self.x_range.update({left: count_})
-                if (right := x + 1) < self.grid.shape[1]:
-                    self.x_range.update({right: count_})
+            if x in self.ys[self.y]:
+                self.x_range.update({x - 1: count_})
+                self.x_range.update({x + 1: count_})
             else:
                 self.x_range.update({x: count_})
 
@@ -49,7 +49,7 @@ class QuantumTachyonBeam:
         return sum(self.x_range.values())
 
     def is_accepting(self):
-        return self.y + 1 == self.grid.shape[0]
+        return self.y + 1 >= self.max_y
 
 
 def solve_(__input=None):
@@ -57,15 +57,19 @@ def solve_(__input=None):
     :challenge: 40
     :expect: 15650261281478
     """
-    lines = []
+    max_y = -1
+    starting_x: int = -1
+    lines: YAxis = defaultdict(set)
     with open(locate(__input), "r") as fp:
-        for line in read_lines(fp):
-            lines.append(list(map(str, list(line))))
+        for i, line in enumerate(read_lines(fp)):
+            max_y = i
+            for m in re.finditer(r"[\^S]", line):
+                if m.group(0) == "S":
+                    starting_x = m.start()
+                else:
+                    lines[i].add(m.start())
 
-    grid = np.matrix(lines)
-    starting_position, = [int(x) for _, x in np.argwhere(grid == "S")]
-
-    beam = QuantumTachyonBeam(starting_position, grid)
+    beam = QuantumTachyonBeam(starting_x, lines, max_y)
     while not beam.is_accepting():
         beam.travel()
 
