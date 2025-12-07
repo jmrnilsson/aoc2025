@@ -32,6 +32,134 @@ pip install -r requirements.txt
 | All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2025\day_07\solve_2.py
+
+```py
+import sys
+from collections import Counter
+from typing import Dict
+import numpy as np
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+class QuantumTachyonBeam:
+    x_range: Dict[int, int]
+    y: int
+
+    def __init__(self, starting_pos: int, grid):
+        self.y = 0
+        self.x_range = Counter({starting_pos: 1})
+        self.grid = grid
+
+    def travel(self):
+        self.y += 1
+        queue = list(self.x_range.items())
+        self.x_range.clear()
+
+        while queue:
+            x, count_ = queue.pop(0)
+            if self.grid[(self.y, x)] == "^":
+                if (left := x - 1) > -1:
+                    self.x_range.update({left: count_})
+                if (right := x + 1) < self.grid.shape[1]:
+                    self.x_range.update({right: count_})
+            else:
+                self.x_range.update({x: count_})
+
+    def sum_timelines(self):
+        return sum(self.x_range.values())
+
+    def is_accepting(self):
+        return self.y + 1 == self.grid.shape[0]
+
+def solve_(__input=None):
+    """
+    :challenge: 40
+    :expect: 15650261281478
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(list(map(str, list(line))))
+
+    grid = np.matrix(lines)
+    starting_position, = [int(x) for _, x in np.argwhere(grid == "S")]
+
+    beam = QuantumTachyonBeam(starting_position, grid)
+    while not beam.is_accepting():
+        beam.travel()
+
+    return beam.sum_timelines()
+
+```
+## year_2025\day_07\solve_1.py
+
+```py
+import sys
+from typing import Set, Tuple
+import numpy as np
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+class TachyonBeam:
+    x_range: Set[int]
+    splits = 0
+    y: int
+
+    def __init__(self, starting_pos: Tuple[int, int], grid):
+        self.y = 0
+        self.x_range = {starting_pos[1]}
+        self.grid = grid
+
+    def travel(self):
+        current_x_range = list(self.x_range)
+        self.x_range.clear()
+        self.y += 1
+
+        while current_x_range:
+            x: int = current_x_range.pop(0)
+            if self.grid[(self.y, x)] == "^":
+                self.splits += 1
+                if (left := x - 1) > -1:
+                    self.x_range.add(left)
+                if (right := x + 1) < self.grid.shape[1]:
+                    self.x_range.add(right)
+            else:
+                self.x_range.add(x)
+
+    def count_splits(self):
+        return self.splits
+
+    def is_accepting(self):
+        return self.y + 1 == self.grid.shape[0]
+
+def solve_(__input=None):
+    """
+    :challenge: 21
+    :expect: 1594
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            lines.append(list(map(str, list(line))))
+
+    grid = np.matrix(lines)
+    starting_positions_, = [[(int(y), int(x))] for y, x in np.argwhere(grid == "S")]
+    starting_position, *_ = starting_positions_
+
+    beam = TachyonBeam(starting_position, grid)
+    while not beam.is_accepting():
+        beam.travel()
+
+    return beam.count_splits()
+
+```
 ## year_2025\day_06\solve_2.py
 
 ```py
