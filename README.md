@@ -32,6 +32,134 @@ pip install -r requirements.txt
 | All-pairs shortest paths:| [Floyd-Warshall](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm)                                    |
 
 
+## year_2025\day_08\solve_2.py
+
+```py
+import heapq
+import itertools
+import math
+import sys
+from typing import Dict, List, Set, Tuple
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+type JunctionBox = Tuple[int, int, int]
+
+def solve_(__input=None):
+    """
+    :challenge: 25272
+    :expect: 42047840
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            jb = line.split(",")
+            lines.append(tuple(map(int, jb)))
+
+    pairs = []
+    for left, right in itertools.combinations(lines, 2):
+        pairs.append((math.dist(left, right), left, right))
+
+    # DSU is probably preferable but roughly the same performance
+    heapq.heapify(pairs)
+    circuits: List[Set[JunctionBox]] = []
+    lookup: Dict[JunctionBox, Set[JunctionBox]] = {}
+    last: None | Tuple[JunctionBox, JunctionBox] = None
+
+    for line in lines:
+        circuit = {line}
+        lookup[line] = circuit
+        circuits.append(circuit)
+
+    while sum(1 for f in circuits if len(f) > 0) > 1:
+        _, a, b = heapq.heappop(pairs)
+
+        circuit_a = lookup[a]
+        circuit_b = lookup[b]
+
+        if circuit_a is circuit_b:
+            continue
+
+        last = a, b
+
+        for swap in list(circuit_b):
+            circuit_a.add(swap)
+            lookup[swap] = circuit_a
+
+        circuit_b.clear()
+
+    return last[0][0] * last[1][0]
+
+```
+## year_2025\day_08\solve_1.py
+
+```py
+import heapq
+import itertools
+import math
+import operator
+import sys
+from functools import reduce
+from typing import Dict, List, Set, Tuple
+from aoc.helpers import build_location, locate, read_lines
+from aoc.printer import ANSIColors, get_meta_from_fn, print2
+
+
+sys.setrecursionlimit(30_000)
+
+type JunctionBox = Tuple[int, int, int]
+
+def solve_(__input=None):
+    """
+    :challenge: 40
+    :expect: 129564
+    """
+    lines = []
+    with open(locate(__input), "r") as fp:
+        for line in read_lines(fp):
+            jb = line.split(",")
+            lines.append(tuple(map(int, jb)))
+
+    pairs = []
+    for left, right in itertools.combinations(lines, 2):
+        pairs.append((math.dist(left, right), left, right))
+
+    heapq.heapify(pairs)
+
+    # DSU is probably preferable but roughly the same performance
+    k = 10 if "test" in __input else 1000
+    heapq.heapify(pairs)
+    circuits: List[Set[JunctionBox]] = []
+    lookup: Dict[JunctionBox, Set[JunctionBox]] = {}
+
+    for line in lines:
+        circuit = {line}
+        lookup[line] = circuit
+        circuits.append(circuit)
+
+    while k > 0:
+        k -= 1
+        _, a, b = heapq.heappop(pairs)
+
+        circuit_a = lookup[a]
+        circuit_b = lookup[b]
+
+        if circuit_a is circuit_b:
+            continue
+
+        for swap in list(circuit_b):
+            circuit_a.add(swap)
+            lookup[swap] = circuit_a
+
+        circuit_b.clear()
+
+    circuits_lengths = [len(f) for f in circuits]
+    return reduce(operator.mul, heapq.nlargest(3, circuits_lengths))
+
+```
 ## year_2025\day_07\solve_2.py
 
 ```py
